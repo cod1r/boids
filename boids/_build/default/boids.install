@@ -1,8 +1,0 @@
-lib: [
-  "_build/install/default/lib/boids/META"
-  "_build/install/default/lib/boids/dune-package"
-  "_build/install/default/lib/boids/opam"
-]
-bin: [
-  "_build/install/default/bin/boids"
-]
