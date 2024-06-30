@@ -1,0 +1,6 @@
+# dune init proj boids
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Shared cache location: /home/cod1r/.cache/dune/db
+# Workspace root: /home/cod1r/workspace/repositories/boids/boids
+# Auto-detected concurrency: 20
