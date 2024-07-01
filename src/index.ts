@@ -58,7 +58,8 @@ vertices[5] = -0.5
 
 gl.bufferData(gl.ARRAY_BUFFER, vertices.buffer, gl.DYNAMIC_DRAW)
 
-//const loop = () => {
-//  requestAnimationFrame(loop)
-//}
-//requestAnimationFrame(loop)
+const loop = () => {
+  gl.drawArrays(gl.TRIANGLES, 0, 3)
+  requestAnimationFrame(loop)
+}
+requestAnimationFrame(loop)
