@@ -1,7 +1,10 @@
-let canvas = Js_of_ocaml.Dom_html.getElementById_opt "canvas"
+open Js_of_ocaml
 ;;
-match canvas with
+let canvas = Dom_html.getElementById_coerce "canvas" Dom_html.CoerceTo.canvas
+;;
+exception NoCanvasFound;;
+let gl = match canvas with
   | Some c -> (
-
+    WebGL.getContext c
   )
-  | None -> ()
+  | None -> raise NoCanvasFound
