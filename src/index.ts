@@ -8,6 +8,8 @@ if (!gl) {
 
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
+gl.viewport(0, 0, canvas.width, canvas.height)
+
 
 const vertexShaderSrc = `
 attribute vec3 position;
@@ -50,15 +52,16 @@ let vertices = new Float32Array(2 * 3)
 vertices[0] = 0.0
 vertices[1] = 0.5
 
-vertices[2] = -0.5
-vertices[3] = -0.5
+vertices[2] = 0.0
+vertices[3] = 0.0
 
 vertices[4] = 0.5
-vertices[5] = -0.5
+vertices[5] = 0.0
 
 gl.bufferData(gl.ARRAY_BUFFER, vertices.buffer, gl.DYNAMIC_DRAW)
 
 const loop = () => {
+  gl.clear(gl.COLOR_BUFFER_BIT)
   gl.drawArrays(gl.TRIANGLES, 0, 3)
   requestAnimationFrame(loop)
 }
