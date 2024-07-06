@@ -1,1 +1,1 @@
-## Implementation of [https://en.wikipedia.org/wiki/Boids](Boids) in Typescript
+## Implementation of [Boids](https://en.wikipedia.org/wiki/Boids) in Typescript
