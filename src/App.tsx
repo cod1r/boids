@@ -8,7 +8,7 @@ function App() {
   useEffect(() => {
     if (canvasRef.current) {
       const canvas = canvasRef.current
-      const gl = canvas.getContext("webgl")
+      const gl = canvas.getContext("webgl2")
 
       if (!gl) {
         throw Error("gl context is null")
