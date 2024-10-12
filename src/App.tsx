@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import "./App.css";
 
 function App() {
@@ -114,6 +114,25 @@ void main() {
           for (let i = 0; i < this.vertices.length; i += 2) {
             this.vertices[i] += this.x_vel;
             this.vertices[i + 1] += this.y_vel;
+          }
+          // first two indices are the coords of the head of the triangle
+          // second two indices is one of the coords of the tail
+          // third two indices is the other one of the coords of the tail
+          if (this.vertices[0] > 1 || this.vertices[0] < -1) {
+            this.x_vel *= -1;
+            // whenever x velocity changes, we just flip the tail around the y axis
+            const diffx1 = this.vertices[0] - this.vertices[2];
+            const diffx2 = this.vertices[0] - this.vertices[4];
+            this.vertices[2] = this.vertices[0] + diffx1;
+            this.vertices[4] = this.vertices[0] + diffx2;
+          }
+          if (this.vertices[1] > 1 || this.vertices[1] < -1) {
+            this.y_vel *= -1;
+            // whenever y velocity changes, we just flip the tail around the x axis
+            const diffy1 = this.vertices[1] - this.vertices[3];
+            const diffy2 = this.vertices[1] - this.vertices[5];
+            this.vertices[3] = this.vertices[1] + diffy1;
+            this.vertices[5] = this.vertices[1] + diffy2;
           }
           gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.vertices);
         }
