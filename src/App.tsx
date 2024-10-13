@@ -1,6 +1,34 @@
 import { useEffect, useRef } from "react";
 import "./App.css";
+// separation: steer to avoid crowding local flockmates
+// alignment: steer towards the average heading of local flockmates
+// cohesion: steer to move towards the average position (center of mass) of local flockmates
+//
+//
+// make sure that the tail of the boids change along with how the head changes angle
+// tail coords are always calculated relative to the head, distance wise and angle wise
+const OFFSET_ANGLE = (165 * Math.PI) / 180;
+const DIFF_BETWEEN_TAILS_ANGLE = Math.PI / 6;
 
+const RATIO = 0.05;
+function calculateTailPointsGivenHeadPoint({
+  x,
+  y,
+  angle,
+}: {
+  x: number;
+  y: number;
+  angle: number;
+}) {
+  const x2 = RATIO * Math.cos(angle + OFFSET_ANGLE) + x;
+  const y2 = RATIO * Math.sin(angle + OFFSET_ANGLE) + y;
+
+  const x3 =
+    RATIO * Math.cos(angle + OFFSET_ANGLE + DIFF_BETWEEN_TAILS_ANGLE) + x;
+  const y3 =
+    RATIO * Math.sin(angle + OFFSET_ANGLE + DIFF_BETWEEN_TAILS_ANGLE) + y;
+  return { x2, y2, x3, y3 };
+}
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -48,7 +76,6 @@ void main() {
       gl.linkProgram(program);
       gl.useProgram(program);
 
-      const RATIO = 0.05;
       class Boid {
         x_vel: number;
         y_vel: number;
@@ -80,18 +107,17 @@ void main() {
           const vertices = new Float32Array(2 * 3);
 
           const angle = Math.random() * 2 * Math.PI;
-
-          this.x_vel = -Math.cos(angle + Math.PI / 12) / 60;
-          this.y_vel = -Math.sin(angle + Math.PI / 12) / 60;
+          this.x_vel = Math.cos(angle) / 240;
+          this.y_vel = -Math.sin(angle) / 240;
 
           const x = Math.random() * 2 - 1;
           const y = Math.random() * 2 - 1;
 
-          const x2 = RATIO * Math.cos(angle) + x;
-          const y2 = RATIO * Math.sin(angle) + y;
-
-          const x3 = RATIO * Math.cos(angle + Math.PI / 6) + x;
-          const y3 = RATIO * Math.sin(angle + Math.PI / 6) + y;
+          const { x2, y2, x3, y3 } = calculateTailPointsGivenHeadPoint({
+            x,
+            y,
+            angle,
+          });
 
           vertices[0] = x * ASPECT_RATIO;
           vertices[1] = y;
@@ -111,29 +137,41 @@ void main() {
             throw Error("gl is null");
           }
           gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-          for (let i = 0; i < this.vertices.length; i += 2) {
-            this.vertices[i] += this.x_vel;
-            this.vertices[i + 1] += this.y_vel;
-          }
+          this.vertices[0] += this.x_vel;
+          this.vertices[1] += this.y_vel;
           // first two indices are the coords of the head of the triangle
           // second two indices is one of the coords of the tail
           // third two indices is the other one of the coords of the tail
           if (this.vertices[0] > 1 || this.vertices[0] < -1) {
             this.x_vel *= -1;
-            // whenever x velocity changes, we just flip the tail around the y axis
-            const diffx1 = this.vertices[0] - this.vertices[2];
-            const diffx2 = this.vertices[0] - this.vertices[4];
-            this.vertices[2] = this.vertices[0] + diffx1;
-            this.vertices[4] = this.vertices[0] + diffx2;
           }
           if (this.vertices[1] > 1 || this.vertices[1] < -1) {
             this.y_vel *= -1;
-            // whenever y velocity changes, we just flip the tail around the x axis
-            const diffy1 = this.vertices[1] - this.vertices[3];
-            const diffy2 = this.vertices[1] - this.vertices[5];
-            this.vertices[3] = this.vertices[1] + diffy1;
-            this.vertices[5] = this.vertices[1] + diffy2;
           }
+          const mag = Math.sqrt(this.x_vel ** 2 + this.y_vel ** 2);
+          // need to multiply by sign of y
+          let facingAngle = Math.acos(this.x_vel / mag) * Math.sign(this.y_vel);
+          if (this.x_vel === 0 && this.y_vel < 0) {
+            facingAngle = (3 * Math.PI) / 2;
+          } else if (this.x_vel === 0 && this.y_vel > 0) {
+            facingAngle = Math.PI / 2;
+          } else if (this.x_vel > 0 && this.y_vel == 0) {
+            facingAngle = 0;
+          } else if (this.x_vel < 0 && this.y_vel === 0) {
+            facingAngle = Math.PI;
+          }
+          const { x2, y2, x3, y3 } = calculateTailPointsGivenHeadPoint({
+            // have to divide by the aspect ratio because the x value was multiplied by the aspect ratio in the constructor and then passed into the vertices array
+            x: this.vertices[0] / ASPECT_RATIO,
+            y: this.vertices[1],
+            angle: facingAngle,
+          });
+
+          this.vertices[2] = x2 * ASPECT_RATIO;
+          this.vertices[3] = y2;
+
+          this.vertices[4] = x3 * ASPECT_RATIO;
+          this.vertices[5] = y3;
           gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.vertices);
         }
         draw() {
@@ -159,7 +197,7 @@ void main() {
         }
       }
       const boids = Array<Boid>();
-      for (let i = 0; i < 200; ++i) {
+      for (let i = 0; i < 100; ++i) {
         const boid = new Boid();
         boids.push(boid);
       }
