@@ -176,9 +176,9 @@ void main() {
   }, []);
 
   return (
-    <>
+    <div>
       <canvas ref={canvasRef}></canvas>
-    </>
+    </div>
   );
 }
 
