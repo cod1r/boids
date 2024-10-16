@@ -7,13 +7,12 @@ import { Boid } from "./Boid";
 // cohesion: steer to move towards the average position (center of mass) of local flockmates
 //
 //
-// make sure that the tail of the boids change along with how the head changes angle
-// tail coords are always calculated relative to the head, distance wise and angle wise
+// next step: implement cohesion
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const graphics = useRef<Graphics | null>(null);
-
+  const pause = useRef<boolean>(false)
   useEffect(() => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
@@ -42,7 +41,9 @@ function App() {
         gl.clear(gl.COLOR_BUFFER_BIT);
         boids.forEach((b) => {
           if (graphics.current === null) throw Error("graphics object is null");
-          b.update(graphics.current);
+          if (!pause.current) {
+            b.update(graphics.current);
+          }
           b.draw(graphics.current);
         });
         requestAnimationFrame(loop);
@@ -53,7 +54,9 @@ function App() {
 
   return (
     <div>
-      <canvas ref={canvasRef}></canvas>
+      <canvas ref={canvasRef} onClick={(e) => {
+        pause.current = !pause.current
+      }}></canvas>
     </div>
   );
 }

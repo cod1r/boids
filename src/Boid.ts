@@ -25,8 +25,8 @@ class Boid {
     const vertices = new Float32Array(2 * 3);
 
     const angle = Math.random() * 2 * Math.PI;
-    this.x_vel = Math.cos(angle) / 240;
-    this.y_vel = -Math.sin(angle) / 240;
+    this.x_vel = Math.cos(angle) / 480;
+    this.y_vel = -Math.sin(angle) / 480;
 
     const x = Math.random() * 2 - 1;
     const y = Math.random() * 2 - 1;
