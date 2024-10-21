@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import "./App.css";
 import { Graphics } from "./Graphics";
 import { Boid } from "./Boid";
+import { BOID_NEARBY_DIST } from "./utils";
 // separation: steer to avoid crowding local flockmates
 // alignment: steer towards the average heading of local flockmates
 // cohesion: steer to move towards the average position (center of mass) of local flockmates
@@ -42,7 +43,16 @@ function App() {
         boids.forEach((b) => {
           if (graphics.current === null) throw Error("graphics object is null");
           if (!pause.current) {
-            b.update(graphics.current);
+            const v = b.getVertices()
+            const nearby = boids.filter(b2 => {
+              const v2 = b2.getVertices()
+              const dist = Math.sqrt((v2[0] - v[0]) ** 2 + (v2[1] - v[1]) ** 2)
+              if (dist <= BOID_NEARBY_DIST) {
+                return true
+              }
+              return false
+            })
+            b.update(graphics.current, nearby);
           }
           b.draw(graphics.current);
         });
@@ -54,7 +64,7 @@ function App() {
 
   return (
     <div>
-      <canvas ref={canvasRef} onClick={(e) => {
+      <canvas ref={canvasRef} onClick={() => {
         pause.current = !pause.current
       }}></canvas>
     </div>

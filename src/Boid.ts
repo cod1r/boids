@@ -53,7 +53,7 @@ class Boid {
 
     gl.bufferData(gl.ARRAY_BUFFER, vertices.buffer, gl.DYNAMIC_DRAW);
   }
-  update(graphics: Graphics) {
+  update(graphics: Graphics, nearbyBoids?: Array<Boid>) {
     const gl = graphics.getGL();
     if (!gl) {
       throw Error("gl is null");
@@ -113,6 +113,9 @@ class Boid {
 
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 2 * 4, 0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  getVertices() {
+    return this.vertices
   }
 }
 
