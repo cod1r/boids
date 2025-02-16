@@ -6,9 +6,6 @@ import { BOID_NEARBY_DIST } from "./utils";
 // separation: steer to avoid crowding local flockmates
 // alignment: steer towards the average heading of local flockmates
 // cohesion: steer to move towards the average position (center of mass) of local flockmates
-//
-//
-// next step: implement cohesion
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

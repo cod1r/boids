@@ -1,10 +1,11 @@
 import { Graphics } from "./Graphics";
-import { calculateTailPointsGivenHeadPoint } from "./utils";
+import { calculateTailPointsGivenHeadPoint, BOID_NEARBY_AMT_LIMIT } from "./utils";
 class Boid {
   x_vel: number;
   y_vel: number;
   buffer: WebGLBuffer | null;
   vertices: Float32Array;
+  immunity_from_change: number;
   constructor(graphics: Graphics) {
     const gl = graphics.getGL();
     if (!gl) {
@@ -25,8 +26,10 @@ class Boid {
     const vertices = new Float32Array(2 * 3);
 
     const angle = Math.random() * 2 * Math.PI;
-    this.x_vel = Math.cos(angle) / 480;
-    this.y_vel = -Math.sin(angle) / 480;
+    this.x_vel = Math.cos(angle) * 0.005;
+    this.y_vel = -Math.sin(angle) * 0.005;
+
+    this.immunity_from_change = 0;
 
     const x = Math.random() * 2 - 1;
     const y = Math.random() * 2 - 1;
@@ -53,22 +56,48 @@ class Boid {
 
     gl.bufferData(gl.ARRAY_BUFFER, vertices.buffer, gl.DYNAMIC_DRAW);
   }
-  update(graphics: Graphics, nearbyBoids?: Array<Boid>) {
+  update(graphics: Graphics, nearbyBoids: Array<Boid>) {
+    const average_heading = nearbyBoids.reduce((acc, boid) => [acc[0] + boid.x_vel / nearbyBoids.length, acc[1] + boid.y_vel / nearbyBoids.length], [0, 0])
     const gl = graphics.getGL();
     if (!gl) {
       throw Error("gl is null");
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+    if (nearbyBoids.length <= BOID_NEARBY_AMT_LIMIT && this.immunity_from_change < 0.4) {
+      const CHANGE_RATE = 0.05
+      const diffX = average_heading[0] - this.x_vel
+      const diffY = average_heading[1] - this.y_vel
+      this.x_vel += CHANGE_RATE * diffX
+      this.y_vel += CHANGE_RATE * diffY
+    }
+    const magnitude = Math.sqrt(this.x_vel * this.x_vel + this.y_vel * this.y_vel)
+    if (magnitude < 0.002) {
+      //0.05 * 0.05 = constant * this.x_vel ** 2 + constant * this.y_vel ** 2
+      //0.05 ** 2 = constant * this.x_vel * constant * this.x_vel + constant * this.y_vel * constant * this.y_vel
+      //0.05 ** 2 = constant**2 * this.x_vel**2 + constant**2 * this.y_vel**2
+      //0.05 ** 2 = constant**2 * (this.x_vel**2 + this.y_vel**2)
+      //0.05 ** 2 / (this.x_vel**2 + this.y_vel**2) = constant**2
+      this.x_vel *= Math.sqrt(0.002 ** 2 / (this.x_vel ** 2 + this.y_vel**2))
+      this.y_vel *= Math.sqrt(0.002 ** 2 / (this.x_vel ** 2 + this.y_vel**2))
+    }
+    if (nearbyBoids.length > BOID_NEARBY_AMT_LIMIT) {
+    }
     this.vertices[0] += this.x_vel;
     this.vertices[1] += this.y_vel;
     // first two indices are the coords of the head of the triangle
     // second two indices is one of the coords of the tail
     // third two indices is the other one of the coords of the tail
     if (this.vertices[0] > 1 || this.vertices[0] < -1) {
+      this.immunity_from_change = 1;
       this.x_vel *= -1;
+    } else {
+      this.immunity_from_change *= 0.99975
     }
     if (this.vertices[1] > 1 || this.vertices[1] < -1) {
+      this.immunity_from_change = 1;
       this.y_vel *= -1;
+    } else {
+      this.immunity_from_change *= 0.99975
     }
     const mag = Math.sqrt(this.x_vel ** 2 + this.y_vel ** 2);
     // need to multiply by sign of y

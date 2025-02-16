@@ -3,6 +3,7 @@ export const OFFSET_ANGLE = (165 * Math.PI) / 180;
 export const DIFF_BETWEEN_TAILS_ANGLE = Math.PI / 6;
 
 export const RATIO = 0.05;
+export const BOID_NEARBY_AMT_LIMIT = 20
 export const BOID_NEARBY_DIST = 0.1
 export const MAX_GROUP_SIZE = 10
 export const FACING_ANGLE_CHANGE_RATE = 2 * Math.PI
