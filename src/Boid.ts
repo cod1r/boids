@@ -80,7 +80,44 @@ class Boid {
       this.x_vel *= Math.sqrt(0.002 ** 2 / (this.x_vel ** 2 + this.y_vel**2))
       this.y_vel *= Math.sqrt(0.002 ** 2 / (this.x_vel ** 2 + this.y_vel**2))
     }
-    if (nearbyBoids.length > BOID_NEARBY_AMT_LIMIT) {
+    if (nearbyBoids.length > BOID_NEARBY_AMT_LIMIT && this.immunity_from_change < 0.1) {
+      const average_heading_copy = [...average_heading]
+      const temp = average_heading_copy[0];
+      average_heading_copy[0] = average_heading_copy[1];
+      average_heading_copy[0] = temp;
+
+      // the below if expression divides because it covers the cases of
+      // positive over positive which needs to convert to one of the
+      // numerator or denominator being negative
+      //
+      // negative over negative which results in the same thing as above
+      //
+      // if the division expression is negative, then both needs to be positive or
+      // both needs to be negative
+      const CHANGE_RATE = 0.1
+      if (average_heading_copy[1] / average_heading_copy[0] >= 0) {
+        //if (randomToDecideWhatWayToTurn < 0.5) {
+        //  this.x_vel += CHANGE_RATE * (-this.x_vel - this.x_vel);
+        //} else {
+          this.y_vel += CHANGE_RATE * (-average_heading_copy[1] - this.y_vel);
+        //}
+      } else {
+        //if (randomToDecideWhatWayToTurn < 0.5) {
+          if (average_heading_copy[0] < 0) {
+            this.x_vel += CHANGE_RATE * (-average_heading_copy[0] - this.x_vel);
+          }
+          if (average_heading_copy[1] < 0) {
+            this.y_vel += CHANGE_RATE * (-average_heading_copy[1] - this.y_vel);
+          }
+        //} else {
+        //  if (this.x_vel > 0) {
+        //    this.x_vel += CHANGE_RATE * (-this.x_vel - this.x_vel);
+        //  }
+        //  if (this.y_vel > 0) {
+        //    this.y_vel += CHANGE_RATE * (-this.y_vel - this.y_vel);
+        //  }
+        //}
+      }
     }
     this.vertices[0] += this.x_vel;
     this.vertices[1] += this.y_vel;
@@ -88,17 +125,14 @@ class Boid {
     // second two indices is one of the coords of the tail
     // third two indices is the other one of the coords of the tail
     if (this.vertices[0] > 1 || this.vertices[0] < -1) {
-      this.immunity_from_change = 1;
+      this.immunity_from_change *= 1.2;
       this.x_vel *= -1;
-    } else {
-      this.immunity_from_change *= 0.99975
     }
     if (this.vertices[1] > 1 || this.vertices[1] < -1) {
-      this.immunity_from_change = 1;
+      this.immunity_from_change *= 1.2;
       this.y_vel *= -1;
-    } else {
-      this.immunity_from_change *= 0.99975
     }
+    this.immunity_from_change *= 0.9875
     const mag = Math.sqrt(this.x_vel ** 2 + this.y_vel ** 2);
     // need to multiply by sign of y
     let facingAngle = Math.acos(this.x_vel / mag) * Math.sign(this.y_vel);
