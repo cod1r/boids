@@ -84,7 +84,7 @@ class Boid {
       const average_heading_copy = [...average_heading]
       const temp = average_heading_copy[0];
       average_heading_copy[0] = average_heading_copy[1];
-      average_heading_copy[0] = temp;
+      average_heading_copy[1] = temp;
 
       // the below if expression divides because it covers the cases of
       // positive over positive which needs to convert to one of the
@@ -94,7 +94,7 @@ class Boid {
       //
       // if the division expression is negative, then both needs to be positive or
       // both needs to be negative
-      const CHANGE_RATE = 0.1
+      const CHANGE_RATE = 0.05
       if (average_heading_copy[1] / average_heading_copy[0] >= 0) {
         //if (randomToDecideWhatWayToTurn < 0.5) {
         //  this.x_vel += CHANGE_RATE * (-this.x_vel - this.x_vel);

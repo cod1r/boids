@@ -6,8 +6,8 @@
 
 canvas {
     position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
+    height: 80%;
+    width: 80%;
+    top: 10%;
+    left: 10%;
 }
