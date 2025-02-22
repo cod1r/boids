@@ -80,7 +80,7 @@ class Boid {
       this.x_vel *= Math.sqrt(0.002 ** 2 / (this.x_vel ** 2 + this.y_vel**2))
       this.y_vel *= Math.sqrt(0.002 ** 2 / (this.x_vel ** 2 + this.y_vel**2))
     }
-    if (nearbyBoids.length > BOID_NEARBY_AMT_LIMIT && this.immunity_from_change < 0.1) {
+    if (nearbyBoids.length > BOID_NEARBY_AMT_LIMIT && this.immunity_from_change < 0.5) {
       const average_heading_copy = [...average_heading]
       const temp = average_heading_copy[0];
       average_heading_copy[0] = average_heading_copy[1];
@@ -95,28 +95,48 @@ class Boid {
       // if the division expression is negative, then both needs to be positive or
       // both needs to be negative
       const CHANGE_RATE = 0.05
+      const numberAboveSlope = nearbyBoids.filter(boid => {
+        const slope = this.y_vel / this.x_vel
+        const b = this.vertices[1] - this.vertices[0] * slope
+        const value = boid.vertices[0] * slope + b - boid.vertices[1]
+        return value < 0
+      }).length
+      const numberBelowSlope = nearbyBoids.filter(boid => {
+        const slope = this.y_vel / this.x_vel
+        const b = this.vertices[1] - this.vertices[0] * slope
+        const value = boid.vertices[0] * slope + b - boid.vertices[1]
+        return value > 0
+      }).length
       if (average_heading_copy[1] / average_heading_copy[0] >= 0) {
-        //if (randomToDecideWhatWayToTurn < 0.5) {
-        //  this.x_vel += CHANGE_RATE * (-this.x_vel - this.x_vel);
-        //} else {
-          this.y_vel += CHANGE_RATE * (-average_heading_copy[1] - this.y_vel);
-        //}
-      } else {
-        //if (randomToDecideWhatWayToTurn < 0.5) {
-          if (average_heading_copy[0] < 0) {
+        // in this case, it is important to remember that if x is < 0, then y is the same
+        // if x is > 0, then y is the same
+        if (numberAboveSlope < numberBelowSlope) {
+          if (this.x_vel < 0) {
+            this.y_vel += CHANGE_RATE * (-average_heading_copy[1] - this.y_vel);
+          } else {
             this.x_vel += CHANGE_RATE * (-average_heading_copy[0] - this.x_vel);
           }
-          if (average_heading_copy[1] < 0) {
+        } else {
+          if (this.x_vel < 0) {
+            this.x_vel += CHANGE_RATE * (-average_heading_copy[0] - this.x_vel);
+          } else {
             this.y_vel += CHANGE_RATE * (-average_heading_copy[1] - this.y_vel);
           }
-        //} else {
-        //  if (this.x_vel > 0) {
-        //    this.x_vel += CHANGE_RATE * (-this.x_vel - this.x_vel);
-        //  }
-        //  if (this.y_vel > 0) {
-        //    this.y_vel += CHANGE_RATE * (-this.y_vel - this.y_vel);
-        //  }
-        //}
+        }
+      } else {
+        if (numberAboveSlope < numberBelowSlope) {
+          if (this.x_vel <= 0 && this.y_vel >= 0) {
+            this.x_vel += CHANGE_RATE * (-average_heading_copy[0] - this.x_vel);
+          } else if (this.x_vel >= 0 && this.y_vel <= 0) {
+            this.y_vel += CHANGE_RATE * (-average_heading_copy[1] - this.y_vel);
+          }
+        } else {
+          if (this.x_vel <= 0 && this.y_vel >= 0) {
+            this.y_vel += CHANGE_RATE * (-average_heading_copy[1] - this.y_vel);
+          } else if (this.x_vel >= 0 && this.y_vel <= 0) {
+            this.x_vel += CHANGE_RATE * (-average_heading_copy[0] - this.x_vel);
+          }
+        }
       }
     }
     this.vertices[0] += this.x_vel;

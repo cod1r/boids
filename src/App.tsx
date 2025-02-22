@@ -31,7 +31,7 @@ function App() {
       gl.viewport(0, 0, canvas.width, canvas.height);
 
       const boids = Array<Boid>();
-      for (let i = 0; i < 100; ++i) {
+      for (let i = 0; i < 200; ++i) {
         const boid = new Boid(graphics.current);
         boids.push(boid);
       }
